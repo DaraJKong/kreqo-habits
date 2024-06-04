@@ -1,0 +1,12 @@
+[[language]]
+name = "rust"
+
+[language-server.rust-analyzer.config]
+# Enable all crate features while analyzing
+cargo.features = "all"
+
+# Ignore leptos' server macro while analyzing
+procMacro.ignored.leptos_macro = ["server"]
+
+# Format Rust files using leptosfmt
+rustfmt.overrideCommand = ["leptosfmt", "--stdin", "--rustfmt"]
