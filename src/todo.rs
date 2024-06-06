@@ -129,7 +129,7 @@ pub fn TodoApp() -> impl IntoView {
 
     view! {
         <Link rel="shortcut icon" type_="image/ico" href="/favicon.ico"/>
-        <Stylesheet id="leptos" href="/pkg/session_auth_axum.css"/>
+        <Stylesheet id="leptos" href="/pkg/kreqo-habits.css"/>
         <Router>
             <header>
                 <A href="/">
@@ -246,7 +246,7 @@ pub fn Todos() -> impl IntoView {
                                                                 {todo.user.unwrap_or_default().username}
                                                                 <ActionForm action=delete_todo>
                                                                     <input type="hidden" name="id" value=todo.id/>
-                                                                    <input type="submit" value="X"/>
+                                                                    <input type="submit" value="X" class="bg-rose-500"/>
                                                                 </ActionForm>
                                                             </li>
                                                         }
