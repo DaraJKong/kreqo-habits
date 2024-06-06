@@ -7,8 +7,8 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS user_permissions (
     user_id  INTEGER NOT NULL,
-    token    TEXT NOT NULL
-    -- FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+    token    TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
 -- INSERT INTO users (id, anonymous, username, password) 
@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS user_permissions (
 -- ON CONFLICT(id) DO UPDATE SET
 --     anonymous = EXCLUDED.anonymous,
 --     username = EXCLUDED.username;
+
 
 CREATE TABLE IF NOT EXISTS todos (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,

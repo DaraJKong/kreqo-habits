@@ -1,23 +1,25 @@
 {
+  description = "Leptos + Axum + Sqlx + Tailwindcss development flake";
+
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    flake-utils.url = "github:numtide/flake-utils";
   };
 
   outputs = {
     self,
     nixpkgs,
-    rust-overlay,
     flake-utils,
+    rust-overlay,
   }:
     flake-utils.lib.eachDefaultSystem (system: let
+      overlays = [(import rust-overlay)];
       pkgs = import nixpkgs {
-        inherit system;
-        overlays = [(import rust-overlay)];
+        inherit system overlays;
       };
     in
       with pkgs; {
@@ -29,14 +31,25 @@
             pkg-config
           ];
           buildInputs = [
-            trunk
-            sqlite
-            sass
+            git
             openssl
-            (rust-bin.nightly.latest.default.override {
-              extensions = ["rust-src"];
-              targets = ["wasm32-unknown-unknown"];
+            (rust-bin.stable.latest.default.override {
+              extensions = ["rust-src" "rust-std" "rust-analyzer" "rustfmt" "clippy"];
+              targets = ["x86_64-unknown-linux-gnu" "wasm32-unknown-unknown"];
             })
+            trunk
+            cargo-leptos
+            leptosfmt
+            sqlite
+            sqlx-cli
+            nil
+            alejandra
+            statix
+            deadnix
+            taplo
+            sass
+            tailwindcss
+            tailwindcss-language-server
           ];
         };
       });
