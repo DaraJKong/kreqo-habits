@@ -3,6 +3,8 @@ use leptos::*;
 use leptos_meta::*;
 use leptos_router::*;
 use serde::{Deserialize, Serialize};
+use leptos_icons::*;
+use icondata as i;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Todo {
@@ -246,7 +248,7 @@ pub fn Todos() -> impl IntoView {
                                                                 {todo.user.unwrap_or_default().username}
                                                                 <ActionForm action=delete_todo>
                                                                     <input type="hidden" name="id" value=todo.id/>
-                                                                    <input type="submit" value="X" class="bg-rose-500"/>
+                                                                    <input type="submit" value="X" class="btn"/>
                                                                 </ActionForm>
                                                             </li>
                                                         }

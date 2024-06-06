@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs_daisyui.url = "github:NixOS/nixpkgs/dc763d353cdf5c5cd7bf2c7af4b750960e66cce7";
     flake-utils.url = "github:numtide/flake-utils";
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
@@ -13,6 +14,7 @@
   outputs = {
     self,
     nixpkgs,
+    nixpkgs_daisyui,
     flake-utils,
     rust-overlay,
   }:
@@ -21,6 +23,12 @@
       pkgs = import nixpkgs {
         inherit system overlays;
       };
+      pkgs_daisyui = import nixpkgs_daisyui {
+        inherit system;
+      };
+      my-tailwindcss = pkgs.nodePackages.tailwindcss.overrideAttrs (oa: {
+        plugins = [pkgs_daisyui.daisyui];
+      });
     in
       with pkgs; {
         devShells.default = mkShell {
@@ -48,7 +56,7 @@
             deadnix
             taplo
             sass
-            tailwindcss
+            my-tailwindcss
             tailwindcss-language-server
           ];
         };
