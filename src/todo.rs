@@ -1,10 +1,8 @@
-use crate::{auth::*, error_template::ErrorTemplate};
+use crate::{auth::*, error_template::ErrorTemplate, ui::{CenteredCard, Form, FormCheckbox, FormInput}};
 use leptos::*;
 use leptos_meta::*;
 use leptos_router::*;
 use serde::{Deserialize, Serialize};
-use leptos_icons::*;
-use icondata as i;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Todo {
@@ -130,71 +128,88 @@ pub fn TodoApp() -> impl IntoView {
     provide_meta_context();
 
     view! {
+        <Title text="Todo App"/>
         <Link rel="shortcut icon" type_="image/ico" href="/favicon.ico"/>
         <Stylesheet id="leptos" href="/pkg/kreqo-habits.css"/>
+        <Html lang="en" class="h-full"/>
+        <Body class="h-full flex flex-col bg-base-200"/>
         <Router>
-            <header>
-                <A href="/">
-                    <h1>"My Tasks"</h1>
-                </A>
-                <Transition fallback=move || {
-                    view! { <span>"Loading..."</span> }
-                }>
-                    {move || {
-                        user.get()
-                            .map(|user| match user {
-                                Err(e) => {
-                                    view! {
-                                        <A href="/signup">"Signup"</A>
-                                        ", "
-                                        <A href="/login">"Login"</A>
-                                        ", "
-                                        <span>{format!("Login error: {}", e)}</span>
-                                    }
-                                        .into_view()
+            <header class="navbar bg-base-100 px-6">
+                <div class="flex-1">
+                    <A href="/">
+                        <h1 class="text-2xl font-bold text-primary">"My Tasks"</h1>
+                    </A>
+                </div>
+                <div class="flex-none">
+                    <Transition fallback=move || {
+                        view! { <span class="loading loading-spinner"></span> }
+                    }>
+                        {move || {
+                            let login_section = move || {
+                                view! {
+                                    <A href="/signup" class="btn btn-ghost text-lg">
+                                        "Sign up"
+                                    </A>
+                                    <A href="/login" class="btn btn-ghost text-lg">
+                                        "Log in"
+                                    </A>
                                 }
-                                Ok(None) => {
-                                    view! {
-                                        <A href="/signup">"Signup"</A>
-                                        ", "
-                                        <A href="/login">"Login"</A>
-                                        ", "
-                                        <span>"Logged out."</span>
+                                    .into_view()
+                            };
+                            user.get()
+                                .map(|user| match user {
+                                    Err(e) => {
+                                        view! {
+                                            login_section()
+                                            <span>{format!("Login error: {}", e)}</span>
+                                        }
+                                            .into_view()
                                     }
-                                        .into_view()
-                                }
-                                Ok(Some(user)) => {
-                                    view! {
-                                        <A href="/settings">"Settings"</A>
-                                        ", "
-                                        <span>
-                                            {format!("Logged in as: {} ({})", user.username, user.id)}
-                                        </span>
-                                    }
-                                        .into_view()
-                                }
-                            })
-                    }}
+                                    Ok(None) => login_section(),
+                                    Ok(Some(user)) => {
+                                        view! {
+                                            <div class="dropdown relative">
+                                                <div
+                                                    tabindex="0"
+                                                    role="button"
+                                                    class="btn btn-ghost text-lg"
+                                                >
+                                                    {user.username}
+                                                </div>
+                                                <ul
+                                                    tabindex="0"
+                                                    class="dropdown-content z-[1] menu relative right-0 mt-1 p-2 w-52 bg-base-200 border border-neutral rounded-xl"
+                                                >
+                                                    <li>
+                                                        <a class="btn btn-ghost text-lg">"Settings"</a>
+                                                    </li>
+                                                    <li>
+                                                        <a
+                                                            on:click=move |_| {
+                                                                logout.dispatch(Logout {});
+                                                            }
 
-                </Transition>
+                                                            class="btn btn-ghost text-lg"
+                                                        >
+                                                            "Log out"
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        }
+                                            .into_view()
+                                    }
+                                })
+                        }}
+
+                    </Transition>
+                </div>
             </header>
-            <hr/>
-            <main>
+            <main class="flex-1">
                 <Routes>
-                    // Route
                     <Route path="" view=Todos/>
                     <Route path="signup" view=move || view! { <Signup action=signup/> }/>
                     <Route path="login" view=move || view! { <Login action=login/> }/>
-                    <Route
-                        path="settings"
-                        view=move || {
-                            view! {
-                                <h1>"Settings"</h1>
-                                <Logout action=logout/>
-                            }
-                        }
-                    />
-
                 </Routes>
             </main>
         </Router>
@@ -288,33 +303,24 @@ pub fn Login(
     action: Action<Login, Result<(), ServerFnError>>,
 ) -> impl IntoView {
     view! {
-        <ActionForm action=action>
-            <h1>"Log In"</h1>
-            <label>
-                "User ID:"
-                <input
-                    type="text"
-                    placeholder="User ID"
-                    maxlength="32"
-                    name="username"
-                    class="auth-input"
+        <CenteredCard>
+            <Form action title="Connect to Your Account" submit="Log In">
+                <FormInput
+                    input_type="text"
+                    id="username"
+                    label="Username"
+                    placeholder="Username"
+                    maxlength=32
                 />
-            </label>
-            <br/>
-            <label>
-                "Password:"
-                <input type="password" placeholder="Password" name="password" class="auth-input"/>
-            </label>
-            <br/>
-            <label>
-                <input type="checkbox" name="remember" class="auth-input"/>
-                "Remember me?"
-            </label>
-            <br/>
-            <button type="submit" class="button">
-                "Log In"
-            </button>
-        </ActionForm>
+                <FormInput
+                    input_type="password"
+                    id="password"
+                    label="Password"
+                    placeholder="Password"
+                />
+                <FormCheckbox label="Remember me?" id="remember"/>
+            </Form>
+        </CenteredCard>
     }
 }
 
@@ -323,57 +329,29 @@ pub fn Signup(
     action: Action<Signup, Result<(), ServerFnError>>,
 ) -> impl IntoView {
     view! {
-        <ActionForm action=action>
-            <h1>"Sign Up"</h1>
-            <label>
-                "User ID:"
-                <input
-                    type="text"
-                    placeholder="User ID"
-                    maxlength="32"
-                    name="username"
-                    class="auth-input"
+        <CenteredCard>
+            <Form action title="Create Your Account" submit="Sign Up">
+                <FormInput
+                    input_type="text"
+                    id="username"
+                    label="Username"
+                    placeholder="Username"
+                    maxlength=32
                 />
-            </label>
-            <br/>
-            <label>
-                "Password:"
-                <input type="password" placeholder="Password" name="password" class="auth-input"/>
-            </label>
-            <br/>
-            <label>
-                "Confirm Password:"
-                <input
-                    type="password"
+                <FormInput
+                    input_type="password"
+                    id="password"
+                    label="Password"
+                    placeholder="Password"
+                />
+                <FormInput
+                    input_type="password"
+                    id="password_confirmation"
+                    label="Confirm Password"
                     placeholder="Password again"
-                    name="password_confirmation"
-                    class="auth-input"
                 />
-            </label>
-            <br/>
-            <label>
-                "Remember me?" <input type="checkbox" name="remember" class="auth-input"/>
-            </label>
-
-            <br/>
-            <button type="submit" class="button">
-                "Sign Up"
-            </button>
-        </ActionForm>
-    }
-}
-
-#[component]
-pub fn Logout(
-    action: Action<Logout, Result<(), ServerFnError>>,
-) -> impl IntoView {
-    view! {
-        <div id="loginbox">
-            <ActionForm action=action>
-                <button type="submit" class="button">
-                    "Log Out"
-                </button>
-            </ActionForm>
-        </div>
+                <FormCheckbox label="Remember me?" id="remember"/>
+            </Form>
+        </CenteredCard>
     }
 }

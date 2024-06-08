@@ -6,6 +6,7 @@ pub mod fallback;
 #[cfg(feature = "ssr")]
 pub mod state;
 pub mod todo;
+pub mod ui;
 
 #[cfg(feature = "hydrate")]
 #[wasm_bindgen::prelude::wasm_bindgen]
