@@ -56,7 +56,7 @@ pub mod ssr {
             .await
             .ok()?;
 
-            //lets just get all the tokens the user can use, we will only use the full permissions if modifying them.
+            // Let's just get all the tokens the user can use, we will only use the full permissions if modifying them
             let sql_user_perms = sqlx::query_as::<_, SqlPermissionTokens>(
                 "SELECT token FROM user_permissions WHERE user_id = ?;",
             )
@@ -86,7 +86,7 @@ pub mod ssr {
             .await
             .ok()?;
 
-            //lets just get all the tokens the user can use, we will only use the full permissions if modifying them.
+            // Let's just get all the tokens the user can use, we will only use the full permissions if modifying them
             let sql_user_perms = sqlx::query_as::<_, SqlPermissionTokens>(
                 "SELECT token FROM user_permissions WHERE user_id = ?;",
             )
@@ -175,11 +175,6 @@ pub mod ssr {
             )
         }
     }
-}
-
-#[server]
-pub async fn foo() -> Result<String, ServerFnError> {
-    Ok(String::from("Bar!"))
 }
 
 #[server]

@@ -83,18 +83,6 @@ async fn main() {
         eprintln!("{e:?}");
     }
 
-    // Explicit server function registration is no longer required
-    // on the main branch. On 0.3.0 and earlier, uncomment the lines
-    // below to register the server functions.
-    // _ = GetTodos::register();
-    // _ = AddTodo::register();
-    // _ = DeleteTodo::register();
-    // _ = Login::register();
-    // _ = Logout::register();
-    // _ = Signup::register();
-    // _ = GetUser::register();
-    // _ = Foo::register();
-
     // Setting this to None means we'll be using cargo-leptos and its env vars
     let conf = get_configuration(None).await.unwrap();
     let leptos_options = conf.leptos_options;
@@ -107,7 +95,7 @@ async fn main() {
         routes: routes.clone(),
     };
 
-    // build our application with a route
+    // Build our application with a route
     let app = Router::new()
         .route(
             "/api/*fn_name",
@@ -124,7 +112,7 @@ async fn main() {
         .layer(SessionLayer::new(session_store))
         .with_state(app_state);
 
-    // run our app with hyper
+    // Run our app with hyper
     // `axum::Server` is a re-export of `hyper::Server`
     log!("listening on http://{}", &addr);
     let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();

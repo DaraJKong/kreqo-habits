@@ -84,7 +84,7 @@ pub async fn add_todo(title: String) -> Result<(), ServerFnError> {
         None => -1,
     };
 
-    // fake API delay
+    // Fake API delay
     std::thread::sleep(std::time::Duration::from_millis(1250));
 
     Ok(sqlx::query(
@@ -207,7 +207,7 @@ pub fn Todos() -> impl IntoView {
     let delete_todo = create_server_action::<DeleteTodo>();
     let submissions = add_todo.submissions();
 
-    // list of todos is loaded from the server in reaction to changes
+    // List of todos is loaded from the server in reaction to changes
     let todos = create_resource(
         move || (add_todo.version().get(), delete_todo.version().get()),
         move |_| get_todos(),
