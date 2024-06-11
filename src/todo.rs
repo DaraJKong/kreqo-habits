@@ -307,16 +307,16 @@ pub fn Login(
             <Form action title="Connect to Your Account" submit="Log In">
                 <FormInput
                     input_type="text"
-                    id="username"
+                    name="username"
                     label="Username"
-                    placeholder="Username"
+                    placeholder="username"
                     maxlength=32
                 />
                 <FormInput
                     input_type="password"
-                    id="password"
+                    name="password"
                     label="Password"
-                    placeholder="Password"
+                    placeholder="password"
                 />
                 <FormCheckbox label="Remember me?" id="remember"/>
             </Form>
@@ -333,22 +333,22 @@ pub fn Signup(
             <Form action title="Create Your Account" submit="Sign Up">
                 <FormInput
                     input_type="text"
-                    id="username"
+                    name="username"
                     label="Username"
-                    placeholder="Username"
+                    placeholder="username"
                     maxlength=32
                 />
                 <FormInput
                     input_type="password"
-                    id="password"
+                    name="password"
                     label="Password"
-                    placeholder="Password"
+                    placeholder="password"
                 />
                 <FormInput
                     input_type="password"
-                    id="password_confirmation"
+                    name="password_confirmation"
                     label="Confirm Password"
-                    placeholder="Password again"
+                    placeholder="password again"
                 />
                 <FormCheckbox label="Remember me?" id="remember"/>
             </Form>

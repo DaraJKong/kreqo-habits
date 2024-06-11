@@ -58,7 +58,7 @@ pub fn FormTitle<'a>(text: &'a str) -> impl IntoView {
 #[component]
 pub fn FormInput<'a>(
     input_type: &'a str,
-    id: &'a str,
+    name: &'a str,
     label: &'a str,
     placeholder: &'a str,
     // TODO: Add required
@@ -66,24 +66,26 @@ pub fn FormInput<'a>(
     #[prop(optional, into)] maxlength: Option<AttributeValue>,
 ) -> impl IntoView {
     let input_type = input_type.to_string();
-    let id = id.to_string();
+    let name = name.to_string();
     let label = label.to_string();
     let placeholder = placeholder.to_string();
 
     view! {
-        <div class="space-y-1">
-            <label for=id.clone() class="block text-lg font-bold">
-                {label}
+        <div>
+            <label class="form-control">
+                <div class="label">
+                    <span class="label-text text-lg font-bold">{label}</span>
+                </div>
+                <input
+                    type=input_type
+                    id=name.clone()
+                    name=name
+                    placeholder=placeholder
+                    value=default_value
+                    maxlength=maxlength
+                    class="input input-accent w-full text-lg"
+                />
             </label>
-            <input
-                type=input_type
-                id=id.clone()
-                name=id
-                placeholder=placeholder
-                value=default_value
-                maxlength=maxlength
-                class="input input-accent w-full"
-            />
         </div>
     }
 }
