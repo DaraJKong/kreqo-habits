@@ -45,6 +45,7 @@
               extensions = ["rust-src" "rust-std" "rust-analyzer" "rustfmt" "clippy"];
               targets = ["x86_64-unknown-linux-gnu" "wasm32-unknown-unknown"];
             })
+            binaryen
             trunk
             cargo-leptos
             leptosfmt
