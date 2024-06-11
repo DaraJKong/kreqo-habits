@@ -5,8 +5,14 @@ use leptos::{
     },
     view, Action, AttributeValue, Children, IntoView, Serializable, ServerFnError,
 };
+use leptos_icons::Icon;
 use leptos_router::ActionForm;
 use serde::de::DeserializeOwned;
+
+#[component]
+pub fn Container(children: Children) -> impl IntoView {
+    view! { <div class="container mx-auto pt-6">{children()}</div> }
+}
 
 #[component]
 pub fn CenteredCard(children: Children) -> impl IntoView {
@@ -16,6 +22,34 @@ pub fn CenteredCard(children: Children) -> impl IntoView {
                 {children()}
             </div>
         </div>
+    }
+}
+
+#[component]
+pub fn ActionIcon<I, O, 'a>(
+    action: Action<I, Result<O, ServerFnError>>,
+    icon: icondata::Icon,
+    class: &'a str,
+    children: Children,
+) -> impl IntoView
+where
+    I: Clone
+        + ServerFn<InputEncoding = PostUrl, Output = O, Error = NoCustomError>
+        + DeserializeOwned
+        + 'static,
+    O: Clone + Serializable + 'static,
+    <<<I as ServerFn>::Client as Client<<I as ServerFn>::Error>>::Request as ClientReq<
+        <I as ServerFn>::Error,
+    >>::FormData: From<web_sys::FormData>,
+{
+    let class = class.to_string();
+
+    view! {
+        <ActionForm action>
+            {children()} <button type="submit" class=format!("btn btn-square {class}")>
+                <Icon icon class="text-2xl"/>
+            </button>
+        </ActionForm>
     }
 }
 
@@ -96,10 +130,12 @@ pub fn FormCheckbox<'a>(label: &'a str, id: &'a str) -> impl IntoView {
     let id = id.to_string();
 
     view! {
-        <label class="flex items-center">
-            <input type="checkbox" name=id class="checkbox checkbox-accent"/>
-            <span class="text-lg font-bold ml-2">{label}</span>
-        </label>
+        <div>
+            <label class="flex items-center">
+                <input type="checkbox" name=id class="checkbox checkbox-accent"/>
+                <span class="text-lg font-bold ml-2">{label}</span>
+            </label>
+        </div>
     }
 }
 

@@ -1,8 +1,9 @@
-use crate::{auth::*, error_template::ErrorTemplate, ui::{CenteredCard, Form, FormCheckbox, FormInput}};
+use crate::{auth::*, error_template::ErrorTemplate, ui::{ActionIcon, CenteredCard, Container, Form, FormCheckbox, FormInput}};
 use leptos::*;
 use leptos_meta::*;
 use leptos_router::*;
 use serde::{Deserialize, Serialize};
+use icondata as i;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Todo {
@@ -95,8 +96,23 @@ pub async fn add_todo(title: String) -> Result<(), ServerFnError> {
     .map(|_| ())?)
 }
 
-// The struct name and path prefix arguments are optional.
-#[server]
+#[server(UpdateTodo, "/api")]
+pub async fn update_todo(id: u32, completed: bool) -> Result<(), ServerFnError> {
+    use self::ssr::*;
+
+    let pool = pool()?;
+
+    Ok(sqlx::query(
+        "UPDATE todos SET completed = $2 WHERE id = $1",
+    )
+    .bind(id)
+    .bind(completed)
+    .execute(&pool)
+    .await
+    .map(|_| ())?)
+}
+
+#[server(DeleteTodo, "/api")]
 pub async fn delete_todo(id: u16) -> Result<(), ServerFnError> {
     use self::ssr::*;
 
@@ -136,7 +152,7 @@ pub fn TodoApp() -> impl IntoView {
         <Router>
             <header class="navbar bg-base-100 px-6">
                 <div class="flex-1">
-                    <A href="/">
+                    <A href="/" class="btn btn-ghost">
                         <h1 class="text-2xl font-bold text-primary">"My Tasks"</h1>
                     </A>
                 </div>
@@ -229,10 +245,15 @@ pub fn Todos() -> impl IntoView {
     );
 
     view! {
-        <div>
-            <MultiActionForm action=add_todo>
-                <label>"Add a Todo" <input type="text" name="title"/></label>
-                <input type="submit" value="Add"/>
+        <Container>
+            <MultiActionForm action=add_todo class="flex items-center gap-4 mb-4">
+                <label class="input input-bordered flex items-center flex-1 text-xl gap-4">
+                    <span class="text-primary">"Todo Title"</span>
+                    <input type="text" name="title"/>
+                </label>
+                <button type="submit" class="btn btn-primary text-lg">
+                    "Add Todo"
+                </button>
             </MultiActionForm>
             <Transition fallback=move || view! { <p>"Loading..."</p> }>
                 <ErrorBoundary fallback=|errors| {
@@ -259,12 +280,7 @@ pub fn Todos() -> impl IntoView {
                                                     .map(move |todo| {
                                                         view! {
                                                             <li>
-                                                                {todo.title} ": Created at " {todo.created_at} " by "
-                                                                {todo.user.unwrap_or_default().username}
-                                                                <ActionForm action=delete_todo>
-                                                                    <input type="hidden" name="id" value=todo.id/>
-                                                                    <input type="submit" value="X" class="btn"/>
-                                                                </ActionForm>
+                                                                <Todo todo delete_todo/>
                                                             </li>
                                                         }
                                                     })
@@ -282,18 +298,74 @@ pub fn Todos() -> impl IntoView {
                                 .filter(|submission| submission.pending().get())
                                 .map(|submission| {
                                     view! {
-                                        <li class="pending">
-                                            {move || submission.input.get().map(|data| data.title)}
+                                        <li>
+                                            <PendingTodo input=submission.input/>
                                         </li>
                                     }
                                 })
                                 .collect_view()
                         };
-                        view! { <ul>{existing_todos} {pending_todos}</ul> }
+                        view! {
+                            <div class="h-full">
+                                <ul class="overflow-auto space-y-2">
+                                    {existing_todos} {pending_todos}
+                                </ul>
+                            </div>
+                        }
                     }}
 
                 </ErrorBoundary>
             </Transition>
+        </Container>
+    }
+}
+
+#[component]
+pub fn PendingTodo(input: RwSignal<Option<AddTodo>>) -> impl IntoView {
+    view! {
+        <div class="flex gap-2 animate-pulse">
+            <div class="h-12 flex flex-1 items-center gap-4 px-3 bg-base-100 rounded-xl">
+                <input type="checkbox" class="checkbox checkbox-accent" disabled/>
+                <span class="text-xl">{input.get().map(|data| data.title)}</span>
+                <span class="flex-1 text-right text-xl">"Loading..."</span>
+            </div>
+        </div>
+    }
+}
+
+#[component]
+pub fn Todo(todo: Todo, delete_todo: Action<DeleteTodo, Result<(), ServerFnError>>) -> impl IntoView {
+    let (completed, set_completed) = create_signal(todo.completed);
+
+    view! {
+        <div class="flex gap-2">
+            <div class="h-12 flex flex-1 items-center gap-4 px-3 bg-base-100 rounded-xl">
+                <input
+                    type="checkbox"
+                    class="checkbox checkbox-accent"
+                    checked=completed
+                    on:change=move |ev| {
+                        let checked = event_target_checked(&ev);
+                        set_completed.set(checked);
+                        spawn_local(async move {
+                            update_todo(todo.id, checked).await.unwrap();
+                        });
+                    }
+                />
+
+                <span class="text-xl">{todo.title}</span>
+                <span class="flex-1 text-right">
+                    "Created at " <span class="text-primary">{todo.created_at}</span> " by "
+                    <span class="text-primary">{todo.user.unwrap_or_default().username}</span>
+                </span>
+            </div>
+            <ActionIcon
+                action=delete_todo
+                icon=i::LuTrash2
+                class="btn-ghost bg-base-100 text-error rounded-xl"
+            >
+                <input type="hidden" name="id" value=todo.id/>
+            </ActionIcon>
         </div>
     }
 }
