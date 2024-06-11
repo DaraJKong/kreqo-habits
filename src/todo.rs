@@ -131,8 +131,8 @@ pub fn TodoApp() -> impl IntoView {
         <Title text="Todo App"/>
         <Link rel="shortcut icon" type_="image/ico" href="/favicon.ico"/>
         <Stylesheet id="leptos" href="/pkg/kreqo-habits.css"/>
-        <Html lang="en" class="h-full"/>
-        <Body class="h-full flex flex-col bg-base-200"/>
+        <Html lang="en" class="h-full bg-base-200"/>
+        <Body class="h-full flex flex-col"/>
         <Router>
             <header class="navbar bg-base-100 px-6">
                 <div class="flex-1">

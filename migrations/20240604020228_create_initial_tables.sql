@@ -17,7 +17,6 @@ CREATE TABLE IF NOT EXISTS user_permissions (
 --     anonymous = EXCLUDED.anonymous,
 --     username = EXCLUDED.username;
 
-
 CREATE TABLE IF NOT EXISTS todos (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id    INTEGER NOT NULL,
