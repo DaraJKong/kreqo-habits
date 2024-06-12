@@ -1,4 +1,4 @@
-use crate::{auth::*, error_template::ErrorTemplate, ui::{ActionIcon, CenteredCard, Container, Form, FormCheckbox, FormInput}};
+use crate::{auth::{get_user, User, Login, Logout, Signup}, error_template::ErrorTemplate, ui::{ActionIcon, CenteredCard, Container, Form, FormCheckbox, FormInput}};
 use leptos::*;
 use leptos_meta::*;
 use leptos_router::*;
@@ -59,10 +59,17 @@ pub async fn get_todos() -> Result<Vec<Todo>, ServerFnError> {
     use self::ssr::{pool, SqlTodo};
     use futures::future::join_all;
 
+    let user = get_user().await?;
     let pool = pool()?;
 
+    let id = match user {
+        Some(user) => user.id,
+        None => -1,
+    };
+
     Ok(join_all(
-        sqlx::query_as::<_, SqlTodo>("SELECT * FROM todos")
+        sqlx::query_as::<_, SqlTodo>("SELECT * FROM todos WHERE user_id = ?")
+            .bind(id)
             .fetch_all(&pool)
             .await?
             .iter()
@@ -78,58 +85,67 @@ pub async fn add_todo(title: String) -> Result<(), ServerFnError> {
     let user = get_user().await?;
     let pool = pool()?;
 
-    let id = match user {
-        Some(user) => user.id,
-        None => -1,
-    };
+    if let Some(user) = user {
+        // Fake API delay
+        std::thread::sleep(std::time::Duration::from_millis(1250));
 
-    // Fake API delay
-    std::thread::sleep(std::time::Duration::from_millis(1250));
-
-    Ok(sqlx::query(
-        "INSERT INTO todos (title, user_id, completed) VALUES (?, ?, false)",
-    )
-    .bind(title)
-    .bind(id)
-    .execute(&pool)
-    .await
-    .map(|_| ())?)
+        Ok(sqlx::query(
+            "INSERT INTO todos (title, user_id, completed) VALUES (?, ?, false)",
+        )
+        .bind(title)
+        .bind(user.id)
+        .execute(&pool)
+        .await
+        .map(|_| ())?)
+    } else {
+        Err(ServerFnError::new("User needs to be loggind in."))
+    }
 }
 
 #[server(UpdateTodo, "/api")]
 pub async fn update_todo(id: u32, completed: bool) -> Result<(), ServerFnError> {
     use self::ssr::*;
 
+    let user = get_user().await?;
     let pool = pool()?;
 
-    Ok(sqlx::query(
-        "UPDATE todos SET completed = $2 WHERE id = $1",
-    )
-    .bind(id)
-    .bind(completed)
-    .execute(&pool)
-    .await
-    .map(|_| ())?)
+    if let Some(_) = user {
+        Ok(sqlx::query(
+            "UPDATE todos SET completed = $2 WHERE id = $1",
+        )
+        .bind(id)
+        .bind(completed)
+        .execute(&pool)
+        .await
+        .map(|_| ())?)
+    } else {
+        Err(ServerFnError::new("User needs to be loggind in."))
+    }
 }
 
 #[server(DeleteTodo, "/api")]
 pub async fn delete_todo(id: u16) -> Result<(), ServerFnError> {
     use self::ssr::*;
 
+    let user = get_user().await?;
     let pool = pool()?;
 
-    Ok(sqlx::query("DELETE FROM todos WHERE id = $1")
-        .bind(id)
-        .execute(&pool)
-        .await
-        .map(|_| ())?)
+    if let Some(_) = user {
+        Ok(sqlx::query("DELETE FROM todos WHERE id = $1")
+            .bind(id)
+            .execute(&pool)
+            .await
+            .map(|_| ())?)
+    } else {
+        Err(ServerFnError::new("User needs to be loggind in."))
+    }
 }
 
 #[component]
 pub fn TodoApp() -> impl IntoView {
     let login = create_server_action::<Login>();
-    let logout = create_server_action::<Logout>();
     let signup = create_server_action::<Signup>();
+    let logout = create_server_action::<Logout>();
 
     let user = create_resource(
         move || {
@@ -207,6 +223,7 @@ pub fn TodoApp() -> impl IntoView {
 
                                                             class="btn btn-ghost text-lg"
                                                         >
+
                                                             "Log out"
                                                         </a>
                                                     </li>
